@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Task Logger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <!-- Weather/Pollution Widget - Full Width Top -->
+    <div class="weather-pollution-widget">
+      <div class="tomorrow"
+         data-location-id="079735"
+         data-language="EN"
+         data-unit-system="METRIC"
+         data-skin="light"
+         data-widget-type="aqiPollutant"
+         style="padding-bottom:22px;position:relative;"
+      >
+        <a
+          href="https://weather.tomorrow.io/"
+          rel="nofollow noopener noreferrer"
+          target="_blank"
+          style="position: absolute; bottom: 0; transform: translateX(-50%); left: 50%;"
+        >
+          <img
+            alt="Powered by Tomorrow.io"
+            src="https://weather-website-client.tomorrow.io/img/powered-by.svg"
+            width="250"
+            height="18"
+          />
+        </a>
+      </div>
+    </div>
+
+    <!-- Clock Widget -->
+    <div class="clock-widget">
+      <div class="current-time" id="currentTime">--:--:--</div>
+      <div class="current-date" id="currentDate">Loading...</div>
+    </div>
+
+    <div class="header-section">
+      <h1>Daily Task Logger</h1>
+      <button id="settingsBtn" class="btn-settings">⚙️ Settings</button>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-tab="overview">
+        <span class="tab-icon">📊</span>
+        <span class="tab-label">Overview</span>
+      </button>
+      <button class="tab-btn" data-tab="analytics">
+        <span class="tab-icon">📈</span>
+        <span class="tab-label">Analytics</span>
+      </button>
+      <button class="tab-btn" data-tab="history">
+        <span class="tab-icon">📅</span>
+        <span class="tab-label">History</span>
+      </button>
+      <button class="tab-btn" data-tab="search">
+        <span class="tab-icon">🔍</span>
+        <span class="tab-label">Search</span>
+      </button>
+    </div>
+
+    <!-- Tab Content Container -->
+    <div class="tab-content-wrapper">
+      <!-- Overview Tab -->
+      <div class="tab-content active" id="overview-tab">
+        <!-- Work Session Controls -->
+        <div class="work-session-panel">
+          <div class="session-status">
+            <span id="sessionStatus">Not Started</span>
+            <span id="sessionTimer" class="timer">00:00:00</span>
+          </div>
+
+          <div class="session-controls">
+            <button id="startWorkBtn" class="btn-primary">Start Work Day</button>
+            <button id="endWorkBtn" class="btn-danger" disabled>End Work Day</button>
+          </div>
+
+          <div id="workSessionInfo" class="work-info hidden">
+            <p><strong>Work Started:</strong> <span id="workStartTime"></span></p>
+            <p><strong>Total Session Time:</strong> <span id="totalSessionTime">0h 0m</span></p>
+            <p><strong>Active Work Time:</strong> <span id="totalWorkTime">0h 0m</span></p>
+            <p><strong>Break Time:</strong> <span id="totalBreakTime">0h 0m</span></p>
+          </div>
+        </div>
+
+        <!-- Current Activity Display -->
+        <div class="task-controls hidden">
+          <div id="currentActivity" class="current-activity hidden">
+            <div class="activity-header">
+              <span id="activityType"></span>
+              <span id="activityTimer" class="timer-large">00:00:00</span>
+            </div>
+            <p id="activityDescription"></p>
+            <button id="stopActivityBtn" class="btn-stop-activity">Stop Current Activity</button>
+          </div>
+
+          <!-- Hidden elements for compatibility -->
+          <textarea id="taskDescription" class="hidden"></textarea>
+          <select id="projectSelect" class="hidden"></select>
+          <select id="categorySelect" class="hidden"></select>
+        </div>
+
+        <!-- Weekly Summary -->
+        <div class="weekly-summary">
+          <h3>Week Summary</h3>
+          <div class="summary-grid">
+            <div class="summary-item highlight">
+              <span class="summary-label">Total Hours</span>
+              <span class="summary-value" id="weekTotalHours">0h</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Active Work</span>
+              <span class="summary-value" id="weekWorkHours">0h</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Break Time</span>
+              <span class="summary-value" id="weekBreakHours">0h</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Tasks Done</span>
+              <span class="summary-value" id="weekTaskCount">0</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Days Worked</span>
+              <span class="summary-value" id="weekDaysWorked">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div class="tab-content" id="analytics-tab">
+        <!-- Analytics Dashboard -->
+    <div class="analytics-dashboard">
+      <div class="dashboard-header">
+        <h2>📊 Analytics Dashboard</h2>
+        <div class="dashboard-controls">
+          <select id="analyticsTimeRange" class="analytics-time-selector">
+            <option value="current-week">Current Week</option>
+            <option value="last-7-days">Last 7 Days</option>
+            <option value="last-30-days">Last 30 Days</option>
+            <option value="last-90-days">Last 90 Days</option>
+            <option value="current-month">Current Month</option>
+            <option value="all-time">All Time</option>
+          </select>
+          <button id="toggleAnalyticsBtn" class="btn-toggle-analytics">Hide</button>
+        </div>
+      </div>
+
+      <div class="analytics-content" id="analyticsContent">
+        <div class="analytics-grid">
+          <!-- Daily Hours Trend - Full Width -->
+          <div class="chart-container chart-wide">
+            <h3>📈 Daily Work Hours Trend</h3>
+            <canvas id="dailyTrendChart"></canvas>
+          </div>
+
+          <!-- Time by Project Chart -->
+          <div class="chart-container">
+            <h3>📊 Time by Project</h3>
+            <canvas id="projectPieChart"></canvas>
+          </div>
+
+          <!-- Work vs Break Breakdown -->
+          <div class="chart-container">
+            <h3>⚖️ Work vs Break Time</h3>
+            <canvas id="workBreakChart"></canvas>
+          </div>
+
+          <!-- Peak Hours Analysis -->
+          <div class="chart-container">
+            <h3>⏰ Most Productive Hours</h3>
+            <canvas id="peakHoursChart"></canvas>
+          </div>
+
+          <!-- Weekly Productivity Insights -->
+          <div class="chart-container">
+            <h3>📅 Weekly Productivity</h3>
+            <canvas id="weeklyProductivityChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Goals Section -->
+        <div class="goals-section">
+          <div class="goals-header">
+            <h3>📈 Goals & Progress</h3>
+            <button id="setGoalsBtn" class="btn-set-goals">Set Goals</button>
+          </div>
+          <div class="goals-grid">
+            <div class="goal-card">
+              <div class="goal-label">Daily Work Goal</div>
+              <div class="goal-progress-bar">
+                <div class="goal-progress-fill" id="dailyGoalProgress" style="width: 0%"></div>
+              </div>
+              <div class="goal-stats">
+                <span id="dailyGoalCurrent">0h</span> / <span id="dailyGoalTarget">8h</span>
+              </div>
+            </div>
+            <div class="goal-card">
+              <div class="goal-label">Weekly Work Goal</div>
+              <div class="goal-progress-bar">
+                <div class="goal-progress-fill" id="weeklyGoalProgress" style="width: 0%"></div>
+              </div>
+              <div class="goal-stats">
+                <span id="weeklyGoalCurrent">0h</span> / <span id="weeklyGoalTarget">40h</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats Cards -->
+        <div class="quick-stats">
+          <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-value" id="avgDailyHours">0h</div>
+            <div class="stat-label">Avg Daily Hours</div>
+            <div class="stat-trend" id="avgDailyTrend"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value" id="mostProductiveDay">-</div>
+            <div class="stat-label">Most Productive Day</div>
+            <div class="stat-trend" id="productiveDayTrend"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📁</div>
+            <div class="stat-value" id="topProject">-</div>
+            <div class="stat-label">Top Project</div>
+            <div class="stat-trend" id="topProjectTrend"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="tasksPerDay">0</div>
+            <div class="stat-label">Avg Tasks/Day</div>
+            <div class="stat-trend" id="tasksPerDayTrend"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💯</div>
+            <div class="stat-value" id="completionRate">0%</div>
+            <div class="stat-label">Completion Rate</div>
+            <div class="stat-trend" id="completionTrend"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
+
+      <!-- History Tab -->
+      <div class="tab-content" id="history-tab">
+        <!-- Week Navigation -->
+        <div class="week-navigation">
+          <button id="prevWeek">← Previous Week</button>
+          <span id="weekDisplay"></span>
+          <button id="nextWeek">Next Week →</button>
+          <button id="currentWeek">Today</button>
+        </div>
+
+        <!-- Daily Breakdown -->
+        <div class="daily-breakdown">
+          <h3>Daily Breakdown</h3>
+          <div id="dailyAccordion"></div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="export-section">
+          <button id="openExportModalBtn" class="btn-success">📗 Export to Excel</button>
+          <button id="resetDataBtn" class="btn-warning">🔄 Reset Current Week</button>
+          <button id="clearDataBtn" class="btn-danger-outline">🗑️ Clear All History</button>
+        </div>
+      </div>
+
+      <!-- Search Tab -->
+      <div class="tab-content" id="search-tab">
+        <!-- Search and Filter Section -->
+    <div class="search-filter-section">
+      <div class="search-header">
+        <h3>🔍 Search & Filter</h3>
+        <button id="clearFiltersBtn" class="btn-clear-filters">Clear All</button>
+      </div>
+
+      <div class="search-controls">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search tasks by description...">
+          <button id="searchBtn" class="btn-search">Search</button>
+        </div>
+
+        <div class="filter-options">
+          <div class="filter-group">
+            <label>Date Range:</label>
+            <div class="date-range-inputs">
+              <input type="date" id="filterStartDate">
+              <span>to</span>
+              <input type="date" id="filterEndDate">
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label>Project:</label>
+            <select id="filterProject">
+              <option value="">All Projects</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Category:</label>
+            <select id="filterCategory">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Type:</label>
+            <select id="filterType">
+              <option value="">All</option>
+              <option value="task">Tasks Only</option>
+              <option value="break">Breaks Only</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="applyFiltersBtn" class="btn-primary">Apply Filters</button>
+      </div>
+
+      <!-- Search Results -->
+      <div id="searchResults" class="search-results hidden">
+        <h4>Search Results (<span id="resultCount">0</span> found)</h4>
+        <div id="resultsList"></div>
+      </div>
+    </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-content confirm-modal-content">
+      <div class="modal-header">
+        <h2 id="confirmModalTitle">Confirm Action</h2>
+      </div>
+      <div class="modal-body">
+        <p id="confirmModalMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button id="confirmModalCancelBtn" class="btn-secondary">Cancel</button>
+        <button id="confirmModalOkBtn" class="btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <div id="alertModal" class="modal hidden">
+    <div class="modal-content alert-modal-content">
+      <div class="modal-header">
+        <h2 id="alertModalTitle">Notice</h2>
+      </div>
+      <div class="modal-body">
+        <p id="alertModalMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button id="alertModalOkBtn" class="btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Status Modal (shown when stopping a task) -->
+  <div id="taskStatusModal" class="modal hidden">
+    <div class="modal-content task-status-modal-content">
+      <div class="modal-header">
+        <h2>🎯 Task Status</h2>
+      </div>
+      <div class="modal-body">
+        <p class="task-status-description" id="taskStatusDescription"></p>
+        <p class="task-status-text">What's the status of this task?</p>
+        <div class="task-status-buttons">
+          <button id="taskCompletedBtn" class="btn-action btn-success">
+            <span class="action-icon">✅</span>
+            <span class="action-label">Completed</span>
+            <span class="action-hint">Task is finished</span>
+          </button>
+          <button id="taskPausedBtn" class="btn-action btn-warning">
+            <span class="action-icon">⏸️</span>
+            <span class="action-label">Continue Later</span>
+            <span class="action-hint">Will resume this task</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resume Task Selection Modal -->
+  <div id="resumeTaskModal" class="modal hidden">
+    <div class="modal-content resume-task-modal-content">
+      <div class="modal-header">
+        <h2>▶️ Resume Task</h2>
+        <button class="close-modal" id="closeResumeTaskModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="resume-task-text">Select a paused task to continue working on:</p>
+        <div class="paused-tasks-list" id="pausedTasksList">
+          <!-- Paused tasks will be dynamically inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal hidden">
+    <div class="modal-content export-modal-content">
+      <div class="modal-header">
+        <h2>📗 Export to Excel</h2>
+        <button class="close-modal" id="closeExportModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Export Type Selection -->
+        <div class="export-type-section">
+          <label class="export-section-label">Export Type</label>
+          <div class="export-type-options">
+            <label class="export-type-option">
+              <input type="radio" name="exportType" value="range" checked>
+              <span class="export-type-card">
+                <span class="export-type-icon">📅</span>
+                <span class="export-type-label">Date Range</span>
+              </span>
+            </label>
+            <label class="export-type-option">
+              <input type="radio" name="exportType" value="project">
+              <span class="export-type-card">
+                <span class="export-type-icon">📁</span>
+                <span class="export-type-label">By Project</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Date Range Options -->
+        <div id="dateRangeOptions" class="export-options-section">
+          <label class="export-section-label">Select Period</label>
+          <div class="quick-range-buttons">
+            <button type="button" class="quick-range-btn active" data-range="today">Today</button>
+            <button type="button" class="quick-range-btn" data-range="yesterday">Yesterday</button>
+            <button type="button" class="quick-range-btn" data-range="thisWeek">This Week</button>
+            <button type="button" class="quick-range-btn" data-range="lastWeek">Last Week</button>
+            <button type="button" class="quick-range-btn" data-range="thisMonth">This Month</button>
+            <button type="button" class="quick-range-btn" data-range="lastMonth">Last Month</button>
+            <button type="button" class="quick-range-btn" data-range="custom">Custom</button>
+          </div>
+          
+          <div id="customDateRange" class="custom-date-range hidden">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="exportStartDate">Start Date</label>
+                <input type="date" id="exportStartDate">
+              </div>
+              <div class="form-group">
+                <label for="exportEndDate">End Date</label>
+                <input type="date" id="exportEndDate">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project Selection (shown when By Project is selected) -->
+        <div id="projectOptions" class="export-options-section hidden">
+          <label class="export-section-label">Select Projects</label>
+          <div class="project-select-actions">
+            <button type="button" id="selectAllProjects" class="btn-small">Select All</button>
+            <button type="button" id="deselectAllProjects" class="btn-small">Deselect All</button>
+          </div>
+          <div id="projectCheckboxList" class="project-checkbox-list">
+            <!-- Project checkboxes will be dynamically inserted -->
+          </div>
+          
+          <div class="project-date-range">
+            <label class="export-section-label">Date Range for Selected Projects</label>
+            <div class="quick-range-buttons">
+              <button type="button" class="project-range-btn active" data-range="all">All Time</button>
+              <button type="button" class="project-range-btn" data-range="thisMonth">This Month</button>
+              <button type="button" class="project-range-btn" data-range="lastMonth">Last Month</button>
+              <button type="button" class="project-range-btn" data-range="custom">Custom</button>
+            </div>
+            <div id="projectCustomDateRange" class="custom-date-range hidden">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="projectExportStartDate">Start Date</label>
+                  <input type="date" id="projectExportStartDate">
+                </div>
+                <div class="form-group">
+                  <label for="projectExportEndDate">End Date</label>
+                  <input type="date" id="projectExportEndDate">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export Preview -->
+        <div class="export-preview">
+          <div class="export-preview-header">
+            <span class="export-preview-icon">📊</span>
+            <span class="export-preview-title">Export Preview</span>
+          </div>
+          <div id="exportPreviewStats" class="export-preview-stats">
+            <div class="preview-stat">
+              <span class="preview-stat-value" id="previewSessions">0</span>
+              <span class="preview-stat-label">Sessions</span>
+            </div>
+            <div class="preview-stat">
+              <span class="preview-stat-value" id="previewTasks">0</span>
+              <span class="preview-stat-label">Tasks</span>
+            </div>
+            <div class="preview-stat">
+              <span class="preview-stat-value" id="previewHours">0h</span>
+              <span class="preview-stat-label">Work Time</span>
+            </div>
+            <div class="preview-stat">
+              <span class="preview-stat-value" id="previewDays">0</span>
+              <span class="preview-stat-label">Days</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="export-extra-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeBreaks" checked>
+            <span>Include breaks in export</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeSummarySheet" checked>
+            <span>Include summary sheet</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="separateSheetPerProject">
+            <span>Separate sheet per project</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="cancelExportBtn" class="btn-secondary">Cancel</button>
+        <button id="confirmExportBtn" class="btn-primary">
+          <span class="btn-icon">📥</span>
+          Export Excel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reminder Modal -->
+  <div id="reminderModal" class="modal hidden">
+    <div class="modal-content reminder-modal-content">
+      <div class="modal-header">
+        <h2 id="reminderTitle">🔔 Reminder</h2>
+      </div>
+      <div class="modal-body">
+        <p id="reminderMessage" class="reminder-message"></p>
+        <div id="reminderActions" class="reminder-actions">
+          <!-- Dynamic action buttons will be inserted here -->
+        </div>
+        <div class="reminder-snooze">
+          <button class="btn-snooze" data-minutes="5">Snooze 5 min</button>
+          <button class="btn-snooze" data-minutes="10">Snooze 10 min</button>
+          <button class="btn-snooze" data-minutes="15">Snooze 15 min</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="dismissReminderBtn" class="btn-secondary">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next Action Modal (after stopping activity) -->
+  <div id="nextActionModal" class="modal hidden">
+    <div class="modal-content next-action-modal-content">
+      <div class="modal-header">
+        <h2>Activity Completed!</h2>
+      </div>
+      <div class="modal-body">
+        <p class="next-action-text">What would you like to do next?</p>
+        <div class="next-action-buttons">
+          <button id="nextActionTaskBtn" class="btn-action btn-success">
+            <span class="action-icon">🎯</span>
+            <span class="action-label">Start New Task</span>
+          </button>
+          <button id="nextActionResumeBtn" class="btn-action btn-primary hidden">
+            <span class="action-icon">▶️</span>
+            <span class="action-label">Resume Task</span>
+          </button>
+          <button id="nextActionBreakBtn" class="btn-action btn-warning">
+            <span class="action-icon">☕</span>
+            <span class="action-label">Take a Break</span>
+          </button>
+          <button id="nextActionEndBtn" class="btn-action btn-danger">
+            <span class="action-icon">🏁</span>
+            <span class="action-label">End Work Day</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Entry Modal -->
+  <div id="taskModal" class="modal hidden">
+    <div class="modal-content task-modal-content">
+      <div class="modal-header">
+        <h2 id="taskModalTitle">Start Task</h2>
+        <button class="close-modal" id="closeTaskModalBtn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="modalTaskDescription">Task Description *</label>
+          <textarea id="modalTaskDescription" placeholder="Describe what you'll be working on..." rows="4" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modalProjectSelect">Project</label>
+            <select id="modalProjectSelect">
+              <option value="">Auto-detect</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modalCategorySelect">Category</label>
+            <select id="modalCategorySelect">
+              <option value="">Auto-detect</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="cancelTaskBtn" class="btn-secondary">Cancel</button>
+        <button id="confirmTaskBtn" class="btn-primary">Start Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Activity Modal -->
+  <div id="editActivityModal" class="modal hidden">
+    <div class="modal-content task-modal-content">
+      <div class="modal-header">
+        <h2>Edit Activity</h2>
+        <button class="close-modal" id="closeEditActivityBtn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="editActivityType">Activity Type</label>
+          <select id="editActivityType">
+            <option value="task">Task</option>
+            <option value="break">Break</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editActivityDescription">Description *</label>
+          <textarea id="editActivityDescription" rows="4" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editActivityStartTime">Start Time</label>
+            <input type="time" id="editActivityStartTime" step="1">
+          </div>
+
+          <div class="form-group">
+            <label for="editActivityEndTime">End Time</label>
+            <input type="time" id="editActivityEndTime" step="1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editActivityProject">Project</label>
+            <select id="editActivityProject"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="editActivityCategory">Category</label>
+            <select id="editActivityCategory"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gap Warning -->
+      <div id="gapWarning" class="gap-warning hidden">
+        <div class="gap-warning-icon">⚠️</div>
+        <div class="gap-warning-text">
+          <strong>Time Gap Detected</strong>
+          <p id="gapWarningMessage">There will be untracked time between activities.</p>
+        </div>
+        <button id="autoFillGapBtn" class="btn-auto-fill">Auto-fill with Break</button>
+      </div>
+
+      <div class="modal-footer">
+        <button id="cancelEditActivityBtn" class="btn-secondary">Cancel</button>
+        <button id="saveEditActivityBtn" class="btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Break Entry Modal -->
+  <div id="breakModal" class="modal hidden">
+    <div class="modal-content task-modal-content">
+      <div class="modal-header">
+        <h2>Take a Break</h2>
+        <button class="close-modal" id="closeBreakModalBtn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="modalBreakDescription">Break Reason (Optional)</label>
+          <textarea id="modalBreakDescription" placeholder="e.g., Lunch, Coffee, Rest..." rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="cancelBreakBtn" class="btn-secondary">Cancel</button>
+        <button id="confirmBreakBtn" class="btn-primary">Start Break</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Goals Settings Modal -->
+  <div id="goalsModal" class="modal hidden">
+    <div class="modal-content task-modal-content">
+      <div class="modal-header">
+        <h2>📈 Set Goals</h2>
+        <button class="close-modal" id="closeGoalsModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="dailyGoalInput">Daily Work Hours Goal</label>
+          <input type="number" id="dailyGoalInput" min="1" max="24" step="0.5" value="8" placeholder="Hours per day">
+        </div>
+        <div class="form-group">
+          <label for="weeklyGoalInput">Weekly Work Hours Goal</label>
+          <input type="number" id="weeklyGoalInput" min="1" max="168" step="1" value="40" placeholder="Hours per week">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelGoalsBtn" class="btn-secondary">Cancel</button>
+        <button id="saveGoalsBtn" class="btn-primary">Save Goals</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⚙️ Settings</h2>
+        <button class="close-modal" id="closeSettingsBtn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Report Personalization -->
+        <div class="settings-section">
+          <h3>Report Personalization</h3>
+          <div class="input-with-btn">
+            <input type="text" id="reportUserNameInput" placeholder="Your name (used in reports)">
+          </div>
+          <div class="input-with-btn" style="margin-top: 10px;">
+            <input type="text" id="reportWorkstationInput" placeholder="Workstation" value="Office Kathmandu">
+          </div>
+          <div class="input-with-btn" style="margin-top: 10px;">
+            <input type="text" id="reportTimezoneInput" placeholder="Timezone" value="GMT+05:45 (Asia/Kathmandu)">
+          </div>
+        </div>
+
+        <!-- Projects Management -->
+        <div class="settings-section">
+          <h3>Project Types</h3>
+          <div class="input-with-btn">
+            <input type="text" id="newProjectInput" placeholder="Enter new project type...">
+            <button id="addProjectBtn" class="btn-primary">Add Project</button>
+          </div>
+          <ul id="projectList" class="settings-list"></ul>
+        </div>
+
+        <!-- Categories Management -->
+        <div class="settings-section">
+          <h3>Work Categories</h3>
+          <div class="input-with-btn">
+            <input type="text" id="newCategoryInput" placeholder="Enter new category...">
+            <button id="addCategoryBtn" class="btn-primary">Add Category</button>
+          </div>
+          <ul id="categoryList" class="settings-list"></ul>
+        </div>
+
+        <!-- Holidays Management -->
+        <div class="settings-section">
+          <h3>Holidays</h3>
+          <div class="input-with-btn">
+            <input type="date" id="holidayDateInput">
+            <input type="text" id="holidayNameInput" placeholder="Holiday name (optional)">
+            <button id="addHolidayBtn" class="btn-primary">Add Holiday</button>
+          </div>
+          <ul id="holidayList" class="settings-list"></ul>
+        </div>
+
+        <!-- Reminders & Notifications -->
+        <div class="settings-section">
+          <h3>🔔 Reminders & Notifications</h3>
+          
+          <!-- Break Reminders -->
+          <div class="reminder-setting-group">
+            <div class="reminder-setting-header">
+              <label class="switch-label">
+                <input type="checkbox" id="breakReminderEnabled" checked>
+                <span class="switch-slider"></span>
+                <span class="switch-text">Break Reminders</span>
+              </label>
+            </div>
+            <div class="reminder-setting-options">
+              <label class="reminder-option-label">Remind me every:</label>
+              <select id="breakReminderInterval" class="reminder-select">
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60" selected>1 hour</option>
+                <option value="90">90 minutes</option>
+                <option value="120">2 hours</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Idle Detection -->
+          <div class="reminder-setting-group">
+            <div class="reminder-setting-header">
+              <label class="switch-label">
+                <input type="checkbox" id="idleDetectionEnabled" checked>
+                <span class="switch-slider"></span>
+                <span class="switch-text">Idle Detection</span>
+              </label>
+            </div>
+            <div class="reminder-setting-options">
+              <label class="reminder-option-label">Notify after:</label>
+              <select id="idleThreshold" class="reminder-select">
+                <option value="5">5 minutes idle</option>
+                <option value="10" selected>10 minutes idle</option>
+                <option value="15">15 minutes idle</option>
+                <option value="20">20 minutes idle</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- End of Day Reminder -->
+          <div class="reminder-setting-group">
+            <div class="reminder-setting-header">
+              <label class="switch-label">
+                <input type="checkbox" id="endOfDayEnabled">
+                <span class="switch-slider"></span>
+                <span class="switch-text">End of Day Reminder</span>
+              </label>
+            </div>
+            <div class="reminder-setting-options">
+              <label class="reminder-option-label">Remind me at:</label>
+              <input type="time" id="endOfDayTime" value="18:00" class="reminder-time-input">
+            </div>
+          </div>
+
+          <!-- Pomodoro Mode -->
+          <div class="reminder-setting-group">
+            <div class="reminder-setting-header">
+              <label class="switch-label">
+                <input type="checkbox" id="pomodoroEnabled">
+                <span class="switch-slider"></span>
+                <span class="switch-text">Pomodoro Mode</span>
+              </label>
+            </div>
+            <div class="reminder-setting-options">
+              <div class="pomodoro-settings">
+                <div class="pomodoro-setting-item">
+                  <label>Work:</label>
+                  <input type="number" id="pomodoroWorkDuration" value="25" min="5" max="60"> min
+                </div>
+                <div class="pomodoro-setting-item">
+                  <label>Short Break:</label>
+                  <input type="number" id="pomodoroShortBreak" value="5" min="1" max="15"> min
+                </div>
+                <div class="pomodoro-setting-item">
+                  <label>Long Break:</label>
+                  <input type="number" id="pomodoroLongBreak" value="15" min="10" max="30"> min
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audio Settings -->
+          <div class="reminder-setting-group">
+            <div class="reminder-setting-header">
+              <label class="switch-label">
+                <input type="checkbox" id="soundEnabled" checked>
+                <span class="switch-slider"></span>
+                <span class="switch-text">Sound Alerts</span>
+              </label>
+            </div>
+            <div class="reminder-setting-options">
+              <label class="reminder-option-label">Alert Sound:</label>
+              <select id="alertSoundSelect" class="reminder-select">
+                <option value="bell">Bell</option>
+                <option value="chime">Chime</option>
+                <option value="gentle">Gentle</option>
+                <option value="digital">Digital</option>
+              </select>
+              <label class="reminder-option-label" style="margin-top: 8px;">Volume:</label>
+              <input type="range" id="soundVolume" min="0" max="100" value="70" class="volume-slider">
+              <span id="volumeDisplay" class="volume-display">70%</span>
+              <button id="testSoundBtn" class="btn-small" style="margin-top: 8px;">🔊 Test Sound</button>
+            </div>
+          </div>
+
+          <!-- Browser Notifications -->
+          <div class="reminder-setting-group">
+            <div class="reminder-setting-header">
+              <label class="switch-label">
+                <input type="checkbox" id="browserNotificationsEnabled">
+                <span class="switch-slider"></span>
+                <span class="switch-text">Browser Notifications</span>
+              </label>
+            </div>
+            <p class="reminder-info">Enable browser notifications to receive alerts even when the app is in the background.</p>
+            <button id="requestNotificationPermission" class="btn-small">Request Permission</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="saveSettingsBtn" class="btn-primary">Save & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    (function(d, s, id) {
+        if (d.getElementById(id)) {
+            if (window.__TOMORROW__) {
+                window.__TOMORROW__.renderWidget();
+            }
+            return;
+        }
+        const fjs = d.getElementsByTagName(s)[0];
+        const js = d.createElement(s);
+        js.id = id;
+        js.src = "https://www.tomorrow.io/v1/widget/sdk/sdk.bundle.min.js";
+
+        fjs.parentNode.insertBefore(js, fjs);
+    })(document, 'script', 'tomorrow-sdk');
+  </script>
+  <script src="script.js"></script>
+  <script src="analytics-enhanced.js"></script>
+  <script src="tabs.js"></script>
+</body>
+</html>
