@@ -11,6 +11,30 @@
 </head>
 <body>
 
+  <!-- Personalized Header - Above Everything -->
+  <header class="personalized-header" id="personalizedHeader">
+    <div class="header-brand">
+      <div class="brand-info">
+        <div class="brand-name" id="headerCompanyName">Your Company</div>
+        <div class="brand-details" id="headerCompanyDetails"></div>
+      </div>
+    </div>
+    <div class="header-greeting">
+      <div class="greeting-text" id="greetingText">Hello!</div>
+      <div class="greeting-subtext" id="greetingSubtext">Ready to track your productivity?</div>
+    </div>
+    <div class="header-stats">
+      <div class="header-stat">
+        <span class="header-stat-icon">📍</span>
+        <span class="header-stat-value" id="headerWorkstation">Office</span>
+      </div>
+      <div class="header-stat">
+        <span class="header-stat-icon">🌐</span>
+        <span class="header-stat-value" id="headerTimezone">UTC</span>
+      </div>
+    </div>
+  </header>
+
   <div class="container">
     <!-- Weather/Pollution Widget - Full Width Top -->
     <div class="weather-pollution-widget">
@@ -760,6 +784,27 @@
     </div>
   </div>
 
+  <!-- Stop Activity Confirmation Modal -->
+  <div id="stopActivityModal" class="modal hidden">
+    <div class="modal-content confirm-modal-content">
+      <div class="modal-header warning-header">
+        <h2>⚠️ Stop Current Activity?</h2>
+        <button class="close-modal" id="closeStopActivityModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-message">
+          <div class="confirm-icon">⏹️</div>
+          <p>Are you sure you want to stop the current activity?</p>
+          <p class="confirm-details" id="stopActivityDetails"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelStopActivityBtn" class="btn-secondary">Cancel</button>
+        <button id="confirmStopActivityBtn" class="btn-danger">Yes, Stop Activity</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Goals Settings Modal -->
   <div id="goalsModal" class="modal hidden">
     <div class="modal-content task-modal-content">
@@ -1037,6 +1082,9 @@
   <!-- Footer -->
   <footer class="app-footer">
     <p>Made with <span class="heart">❤️</span> by <a href="https://snstechservices.com.au/" target="_blank" rel="noopener">SNS Tech Services</a></p>
+    <div class="footer-links">
+      <a href="readme.html" target="_blank" class="footer-link">📖 Documentation</a>
+    </div>
   </footer>
 </body>
 </html>

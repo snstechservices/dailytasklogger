@@ -32,6 +32,105 @@ function initializeClock() {
 }
 
 // ========================================
+// PERSONALIZED HEADER
+// ========================================
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "Good Morning";
+  if (hour >= 12 && hour < 17) return "Good Afternoon";
+  if (hour >= 17 && hour < 21) return "Good Evening";
+  return "Good Night";
+}
+
+function updatePersonalizedHeader() {
+  // Get elements
+  const greetingText = document.getElementById('greetingText');
+  const greetingSubtext = document.getElementById('greetingSubtext');
+  const headerCompanyName = document.getElementById('headerCompanyName');
+  const headerCompanyDetails = document.getElementById('headerCompanyDetails');
+  const headerWorkstation = document.getElementById('headerWorkstation');
+  const headerTimezone = document.getElementById('headerTimezone');
+  const headerLogo = document.getElementById('headerLogo');
+
+  // Get user data with fallbacks
+  const userName = localStorage.getItem('reportUserName') || 'User';
+  const workstation = localStorage.getItem('reportWorkstation') || 'Office';
+  const timezone = localStorage.getItem('reportTimezone') || 'Local Time';
+  
+  // Get branding data
+  const brandData = JSON.parse(localStorage.getItem('reportBrand') || '{}');
+  const companyName = brandData.name || 'Your Company';
+  const companyEmail = brandData.email || '';
+  const companyPhone = brandData.phone || '';
+  const companyWebsite = brandData.website || '';
+  const logoType = localStorage.getItem('reportLogoType') || 'icon';
+  const customLogo = localStorage.getItem('reportCustomLogo') || '';
+
+  // Update greeting
+  const greeting = getGreeting();
+  if (greetingText) {
+    greetingText.textContent = `${greeting}, ${userName}! 👋`;
+  }
+  
+  // Update greeting subtext based on time
+  if (greetingSubtext) {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 9) {
+      greetingSubtext.textContent = "Ready to start a productive day?";
+    } else if (hour >= 9 && hour < 12) {
+      greetingSubtext.textContent = "Keep up the great work!";
+    } else if (hour >= 12 && hour < 14) {
+      greetingSubtext.textContent = "Don't forget to take a lunch break!";
+    } else if (hour >= 14 && hour < 17) {
+      greetingSubtext.textContent = "Stay focused, you're doing great!";
+    } else if (hour >= 17 && hour < 19) {
+      greetingSubtext.textContent = "Wrapping up for the day?";
+    } else {
+      greetingSubtext.textContent = "Working late? Remember to rest!";
+    }
+  }
+
+  // Update company info
+  if (headerCompanyName) {
+    headerCompanyName.textContent = companyName;
+  }
+
+  // Update company details
+  if (headerCompanyDetails) {
+    let details = [];
+    if (companyEmail) details.push(`<span>📧 ${companyEmail}</span>`);
+    if (companyPhone) details.push(`<span>📞 ${companyPhone}</span>`);
+    if (companyWebsite) {
+      const shortWebsite = companyWebsite.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      details.push(`<span>🌐 ${shortWebsite}</span>`);
+    }
+    headerCompanyDetails.innerHTML = details.join('');
+  }
+
+  // Update workstation and timezone
+  if (headerWorkstation) {
+    headerWorkstation.textContent = workstation;
+  }
+  if (headerTimezone) {
+    // Shorten timezone display
+    const shortTimezone = timezone.split(' ')[0] || timezone;
+    headerTimezone.textContent = shortTimezone;
+  }
+
+  // Update logo
+  if (headerLogo) {
+    if (logoType === 'custom' && customLogo) {
+      headerLogo.innerHTML = `<img src="${customLogo}" alt="Logo">`;
+    } else if (logoType === 'icon') {
+      headerLogo.innerHTML = '💼';
+    } else {
+      headerLogo.innerHTML = '🏢';
+    }
+  }
+}
+
+// ========================================
 // ORIGINAL CODE STARTS HERE
 // ========================================
 
@@ -4778,10 +4877,51 @@ async function clearAllData() {
   }
 }
 
+// Stop Activity Confirmation Modal Elements
+const stopActivityModal = document.getElementById("stopActivityModal");
+const closeStopActivityModalBtn = document.getElementById("closeStopActivityModalBtn");
+const cancelStopActivityBtn = document.getElementById("cancelStopActivityBtn");
+const confirmStopActivityBtn = document.getElementById("confirmStopActivityBtn");
+const stopActivityDetails = document.getElementById("stopActivityDetails");
+
+// Function to show stop activity confirmation
+function showStopActivityConfirmation() {
+  // Build details message
+  let details = "";
+  if (currentActivity) {
+    const activityType = currentActivity.type === "task" ? "Task" : "Break";
+    const elapsed = formatDuration(Math.floor((Date.now() - currentActivity.startTime) / 1000));
+    details = `<strong>${activityType}</strong> in progress for <strong>${elapsed}</strong>`;
+    if (currentActivity.description) {
+      details += `<br><em>"${currentActivity.description}"</em>`;
+    }
+  }
+  stopActivityDetails.innerHTML = details;
+  stopActivityModal.classList.remove("hidden");
+}
+
+// Function to hide stop activity confirmation
+function hideStopActivityConfirmation() {
+  stopActivityModal.classList.add("hidden");
+}
+
+// Stop Activity Modal Event Listeners
+closeStopActivityModalBtn.addEventListener("click", hideStopActivityConfirmation);
+cancelStopActivityBtn.addEventListener("click", hideStopActivityConfirmation);
+confirmStopActivityBtn.addEventListener("click", () => {
+  hideStopActivityConfirmation();
+  stopCurrentActivity();
+});
+stopActivityModal.addEventListener("click", (e) => {
+  if (e.target === stopActivityModal) {
+    hideStopActivityConfirmation();
+  }
+});
+
 // Event listeners
 startWorkBtn.addEventListener("click", startWorkDay);
 endWorkBtn.addEventListener("click", endWorkDay);
-stopActivityBtn.addEventListener("click", stopCurrentActivity);
+stopActivityBtn.addEventListener("click", showStopActivityConfirmation);
 
 prevWeekBtn.addEventListener("click", () => {
   currentWeekOffset--;
@@ -4887,6 +5027,7 @@ saveSettingsBtn.addEventListener("click", () => {
   saveReportContext();
   saveReminderSettings(); // Save reminder settings
   saveBranding(); // Save branding settings
+  updatePersonalizedHeader(); // Update header with new settings
   closeSettings();
 });
 addProjectBtn.addEventListener("click", addProject);
@@ -5115,10 +5256,14 @@ nextActionModal.addEventListener("click", (e) => {
 
 // Initialize
 initializeClock();
+updatePersonalizedHeader();
 populateProjectSelect();
 populateCategorySelect();
 populateFilterSelects();
 renderWeekView();
+
+// Update personalized header every minute (for greeting changes)
+setInterval(updatePersonalizedHeader, 60000);
 
 // Recover active session/activity after refresh (robustness)
 (function restoreActiveState() {
