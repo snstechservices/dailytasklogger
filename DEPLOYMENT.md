@@ -9,13 +9,14 @@
    git push origin main
    ```
 
-2. **Enable GitHub Pages (REQUIRED - Must be done manually)**
-   - ⚠️ **IMPORTANT**: You MUST enable GitHub Pages manually before the workflow can deploy
+2. **Enable GitHub Pages**
    - Go to your repository Settings
    - Navigate to **Pages** section
-   - Under "Build and deployment" → "Source", select **GitHub Actions**
-   - Click **Save** to apply the changes
-   - The workflow will automatically deploy on the next push
+   - Under "Build and deployment" → "Source", select **Deploy from a branch**
+   - Choose your branch (usually `main` or `master`)
+   - Select `/ (root)` as the folder
+   - Click **Save**
+   - Your site will be available at `https://yourusername.github.io/repo-name/` after a few minutes
 
 3. **Configure Firebase**
    - Go to [Firebase Console](https://console.firebase.google.com/)
@@ -96,7 +97,7 @@ const firebaseConfig = {
 ## Deployment Checklist
 
 - [ ] Code pushed to GitHub
-- [ ] GitHub Pages enabled (GitHub Actions)
+- [ ] GitHub Pages enabled (Deploy from a branch)
 - [ ] Firebase authorized domains configured
 - [ ] Firestore security rules updated
 - [ ] Test authentication flow
@@ -124,17 +125,14 @@ const firebaseConfig = {
 
 ## Troubleshooting
 
-### GitHub Pages Deployment Fails with "Resource not accessible by integration"
-**Error**: `Get Pages site failed` or `Create Pages site failed. Error: Resource not accessible by integration`
+### GitHub Pages Not Showing Up
+**Issue**: Site not accessible after enabling Pages
 
 **Solution**: 
-1. GitHub Pages must be enabled manually before the workflow can deploy
-2. Go to your repository → **Settings** → **Pages**
-3. Under "Build and deployment" → "Source", select **GitHub Actions**
-4. Click **Save**
-5. Push a new commit or re-run the workflow
-
-**Why this happens**: The workflow doesn't have admin permissions to automatically enable Pages. You must enable it manually in repository settings first.
+1. Wait a few minutes for GitHub to build and deploy your site
+2. Check the Pages settings to ensure the correct branch is selected
+3. Make sure your `index.html` is in the root directory
+4. Visit `https://yourusername.github.io/repo-name/` (replace with your username and repo name)
 
 ### Service Worker Not Registering
 - Check browser console for errors

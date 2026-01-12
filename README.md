@@ -15,20 +15,17 @@ A Progressive Web App (PWA) for tracking daily tasks, breaks, and productivity w
 
 ## Deployment to GitHub Pages
 
-This app is configured to deploy automatically to GitHub Pages.
+This app can be deployed to GitHub Pages using branch-based deployment.
 
-### Automatic Deployment
+### Setup Instructions
 
 1. Push your code to the `main` or `master` branch
-2. GitHub Actions will automatically deploy to GitHub Pages
-3. Your app will be available at `https://yourusername.github.io/repo-name/`
-
-### Manual Setup
-
-1. Go to your repository Settings
-2. Navigate to Pages section
-3. Select source: **GitHub Actions**
-4. The workflow will deploy automatically on push
+2. Go to your repository Settings → Pages
+3. Under "Source", select **Deploy from a branch**
+4. Choose your branch (usually `main` or `master`)
+5. Select `/ (root)` as the folder
+6. Click **Save**
+7. Your app will be available at `https://yourusername.github.io/repo-name/` after a few minutes
 
 ### 🔐 Firebase Security Configuration (REQUIRED)
 
