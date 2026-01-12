@@ -4,6 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Task Logger</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Track your daily tasks, breaks, and productivity with detailed analytics and Excel export">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Task Logger">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Daily Task Logger">
+  <meta name="msapplication-TileColor" content="#1e1b4b">
+  <meta name="msapplication-tap-highlight" content="no">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167x167.png">
+  
+  <!-- Splash Screens for iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -70,7 +96,32 @@
 
     <div class="header-section">
       <h1>Daily Task Logger</h1>
-      <button id="settingsBtn" class="btn-settings">⚙️ Settings</button>
+      <div class="header-actions">
+        <!-- Firebase Auth UI -->
+        <div id="firebaseAuthContainer" class="firebase-auth-container">
+          <div id="firebaseAuthSignedOut" class="firebase-auth-signed-out">
+            <button id="firebaseSignInBtn" class="btn-firebase-signin">
+              <span class="firebase-icon">🔐</span>
+              <span>Sign in to Sync</span>
+            </button>
+          </div>
+          <div id="firebaseAuthSignedIn" class="firebase-auth-signed-in hidden">
+            <div class="firebase-user-info">
+              <img id="firebaseUserAvatar" class="firebase-user-avatar" src="" alt="User">
+              <div class="firebase-user-details">
+                <span id="firebaseUserName" class="firebase-user-name"></span>
+                <span id="firebaseSyncStatus" class="firebase-sync-status">Syncing...</span>
+              </div>
+            </div>
+            <button id="firebaseSyncNowBtn" class="btn-firebase-sync" title="Sync Now">
+              <span class="sync-icon">🔄</span>
+              <span>Sync Now</span>
+            </button>
+            <button id="firebaseSignOutBtn" class="btn-firebase-signout" title="Sign Out">Sign Out</button>
+          </div>
+        </div>
+        <button id="settingsBtn" class="btn-settings">⚙️ Settings</button>
+      </div>
     </div>
 
     <!-- Tab Navigation -->
@@ -1075,9 +1126,260 @@
         fjs.parentNode.insertBefore(js, fjs);
     })(document, 'script', 'tomorrow-sdk');
   </script>
+  <!-- Firebase Integration -->
+  <script type="module">
+    import TaskLoggerStateManager from './app-state-integration.js';
+
+    // Firebase configuration (from firebase-example.html)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNNIewrHPSnZnDGm2mhi6Ccl9KirNJCTI",
+      authDomain: "dailytasklogger-5d2b6.firebaseapp.com",
+      projectId: "dailytasklogger-5d2b6",
+      storageBucket: "dailytasklogger-5d2b6.firebasestorage.app",
+      messagingSenderId: "57861419750",
+      appId: "1:57861419750:web:409fa88870f255a4d9c127",
+      measurementId: "G-NCK0NR36BN"
+    };
+
+    // Initialize Firebase State Manager
+    window.firebaseStateManager = new TaskLoggerStateManager(firebaseConfig);
+
+    // DOM elements
+    const signInBtn = document.getElementById('firebaseSignInBtn');
+    const signOutBtn = document.getElementById('firebaseSignOutBtn');
+    const syncNowBtn = document.getElementById('firebaseSyncNowBtn');
+    const signedOutDiv = document.getElementById('firebaseAuthSignedOut');
+    const signedInDiv = document.getElementById('firebaseAuthSignedIn');
+    const userAvatar = document.getElementById('firebaseUserAvatar');
+    const userName = document.getElementById('firebaseUserName');
+    const syncStatus = document.getElementById('firebaseSyncStatus');
+
+    // Update UI based on auth state
+    function updateAuthUI(user) {
+      if (user) {
+        signedOutDiv.classList.add('hidden');
+        signedInDiv.classList.remove('hidden');
+        userAvatar.src = user.photoURL || 'https://via.placeholder.com/32';
+        userName.textContent = user.displayName || user.email || 'User';
+        syncStatus.textContent = 'Ready';
+        
+        // Reset sync button
+        if (syncNowBtn) {
+          syncNowBtn.disabled = false;
+          syncNowBtn.innerHTML = '<span class="sync-icon">🔄</span><span>Sync Now</span>';
+        }
+      } else {
+        signedOutDiv.classList.remove('hidden');
+        signedInDiv.classList.add('hidden');
+      }
+    }
+
+    // Sign in handler
+    if (signInBtn) {
+      signInBtn.addEventListener('click', async () => {
+        try {
+          signInBtn.disabled = true;
+          signInBtn.innerHTML = '<span>Signing in...</span>';
+          await window.firebaseStateManager.signIn();
+        } catch (error) {
+          console.error('Sign in error:', error);
+          alert('Sign in failed: ' + error.message);
+          signInBtn.disabled = false;
+          signInBtn.innerHTML = '<span class="firebase-icon">🔐</span><span>Sign in to Sync</span>';
+        }
+      });
+    }
+
+    // Manual sync button handler
+    if (syncNowBtn) {
+      syncNowBtn.addEventListener('click', async () => {
+        try {
+          syncNowBtn.disabled = true;
+          syncNowBtn.innerHTML = '<span class="sync-icon">🔄</span><span>Syncing...</span>';
+          syncStatus.textContent = 'Syncing...';
+          
+          // Save current state
+          const saveResult = await window.firebaseStateManager.manualSave();
+          
+          if (saveResult.success) {
+            syncStatus.textContent = 'Synced';
+            syncNowBtn.innerHTML = '<span class="sync-icon">🔄</span><span>Sync Now</span>';
+            
+            // Show brief success message
+            const originalText = syncStatus.textContent;
+            syncStatus.textContent = '✅ Synced!';
+            setTimeout(() => {
+              syncStatus.textContent = originalText;
+            }, 2000);
+          } else {
+            syncStatus.textContent = 'Sync error';
+            syncNowBtn.innerHTML = '<span class="sync-icon">🔄</span><span>Sync Now</span>';
+          }
+        } catch (error) {
+          console.error('Sync error:', error);
+          syncStatus.textContent = 'Sync failed';
+          syncNowBtn.innerHTML = '<span class="sync-icon">🔄</span><span>Sync Now</span>';
+          alert('Sync failed: ' + error.message);
+        } finally {
+          syncNowBtn.disabled = false;
+        }
+      });
+    }
+
+    // Sign out handler
+    if (signOutBtn) {
+      signOutBtn.addEventListener('click', async () => {
+        if (confirm('Are you sure you want to sign out? Your data will stop syncing.')) {
+          try {
+            await window.firebaseStateManager.signOut();
+          } catch (error) {
+            console.error('Sign out error:', error);
+            alert('Sign out failed: ' + error.message);
+          }
+        }
+      });
+    }
+
+    // Listen for auth state changes
+    window.firebaseStateManager.onAuthStateChange(async (user) => {
+      updateAuthUI(user);
+      
+      if (user) {
+        // Load app state when signed in
+        try {
+          const result = await window.firebaseStateManager.loadAppState();
+          if (result.success && result.state) {
+            syncStatus.textContent = 'Synced';
+            
+            // Trigger app refresh if needed
+            if (window.renderWeekView) {
+              window.renderWeekView();
+            }
+            if (window.updateWeeklySummary) {
+              window.updateWeeklySummary();
+            }
+          } else {
+            syncStatus.textContent = 'No saved data';
+          }
+        } catch (error) {
+          console.error('Error loading state:', error);
+          syncStatus.textContent = 'Sync error';
+        }
+      }
+    });
+
+    // Listen for state sync events
+    window.firebaseStateManager.getStateSync().onStateSync((event) => {
+      if (event.type === 'synced') {
+        syncStatus.textContent = 'Synced';
+        
+        // Trigger app refresh
+        if (window.renderWeekView) {
+          window.renderWeekView();
+        }
+        if (window.updateWeeklySummary) {
+          window.updateWeeklySummary();
+        }
+      }
+    });
+
+    // Listen for app state changes to auto-save
+    window.addEventListener('firebase-state-loaded', () => {
+      // State was loaded, refresh UI
+      if (window.renderWeekView) {
+        setTimeout(() => window.renderWeekView(), 100);
+      }
+    });
+
+    // Auto-save when important data changes
+    const originalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(key, value) {
+      originalSetItem.apply(this, arguments);
+      
+      // Auto-save to Firebase when important data changes
+      const importantKeys = ['workSessions', 'customProjects', 'customCategories', 'holidays', 
+                            'reportBrand', 'workGoals', 'reminderSettings', 'activeSession', 
+                            'activeActivity', 'pausedTasks'];
+      
+      if (importantKeys.includes(key) && window.firebaseStateManager && window.firebaseStateManager.isSignedIn()) {
+        // Debounce: only sync after 2 seconds of inactivity
+        clearTimeout(window.firebaseSyncTimeout);
+        window.firebaseSyncTimeout = setTimeout(() => {
+          window.firebaseStateManager.triggerAutoSave();
+        }, 2000);
+      }
+    };
+  </script>
+
   <script src="script.js"></script>
   <script src="analytics-enhanced.js"></script>
   <script src="tabs.js"></script>
+  
+  <!-- Service Worker Registration -->
+  <script>
+      // Register Service Worker for PWA functionality
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          // Detect base path for GitHub Pages (works for both root and subdirectory)
+          const basePath = window.location.pathname.split('/').slice(0, -1).join('/') || '/';
+          const swPath = basePath + '/sw.js';
+          navigator.serviceWorker.register(swPath)
+          .then((registration) => {
+            console.log('✅ Service Worker registered successfully:', registration.scope);
+            
+            // Check for updates periodically
+            setInterval(() => {
+              registration.update();
+            }, 60 * 60 * 1000); // Check every hour
+            
+            // Handle updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('🔄 New Service Worker found, installing...');
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New content is available
+                  console.log('📦 New version available! Refresh to update.');
+                  // Optionally show update notification to user
+                  if (confirm('A new version is available! Reload to update?')) {
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch((error) => {
+            console.error('❌ Service Worker registration failed:', error);
+          });
+      });
+      
+      // Handle offline/online status
+      window.addEventListener('online', () => {
+        console.log('🌐 Back online');
+        document.body.classList.remove('offline');
+      });
+      
+      window.addEventListener('offline', () => {
+        console.log('📴 Gone offline');
+        document.body.classList.add('offline');
+      });
+    }
+    
+    // Handle PWA install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('📲 PWA install prompt ready');
+      // Optionally show custom install button
+    });
+    
+    window.addEventListener('appinstalled', () => {
+      console.log('✅ PWA installed successfully');
+      deferredPrompt = null;
+    });
+  </script>
 
   <!-- Footer -->
   <footer class="app-footer">

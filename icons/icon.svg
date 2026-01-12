@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="50%" style="stop-color:#7c3aed"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="100" fill="url(#grad)"/>
+  <g fill="white">
+    <!-- Clipboard -->
+    <rect x="140" y="100" width="232" height="312" rx="20" fill="white" opacity="0.95"/>
+    <rect x="180" y="70" width="152" height="50" rx="10" fill="white"/>
+    <circle cx="256" cy="95" r="15" fill="#6366f1"/>
+    
+    <!-- Check marks -->
+    <rect x="175" y="160" width="25" height="25" rx="5" fill="#6366f1"/>
+    <path d="M180 172 L188 180 L200 165" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="215" y="162" width="120" height="8" rx="4" fill="#e5e7eb"/>
+    <rect x="215" y="175" width="80" height="6" rx="3" fill="#f3f4f6"/>
+    
+    <rect x="175" y="210" width="25" height="25" rx="5" fill="#6366f1"/>
+    <path d="M180 222 L188 230 L200 215" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="215" y="212" width="100" height="8" rx="4" fill="#e5e7eb"/>
+    <rect x="215" y="225" width="60" height="6" rx="3" fill="#f3f4f6"/>
+    
+    <rect x="175" y="260" width="25" height="25" rx="5" fill="#10b981"/>
+    <path d="M180 272 L188 280 L200 265" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="215" y="262" width="140" height="8" rx="4" fill="#e5e7eb"/>
+    <rect x="215" y="275" width="90" height="6" rx="3" fill="#f3f4f6"/>
+    
+    <rect x="175" y="310" width="25" height="25" rx="5" stroke="#d1d5db" stroke-width="2" fill="white"/>
+    <rect x="215" y="312" width="110" height="8" rx="4" fill="#e5e7eb"/>
+    <rect x="215" y="325" width="70" height="6" rx="3" fill="#f3f4f6"/>
+    
+    <rect x="175" y="360" width="25" height="25" rx="5" stroke="#d1d5db" stroke-width="2" fill="white"/>
+    <rect x="215" y="362" width="90" height="8" rx="4" fill="#e5e7eb"/>
+    <rect x="215" y="375" width="50" height="6" rx="3" fill="#f3f4f6"/>
+  </g>
+  
+  <!-- Clock badge -->
+  <circle cx="380" cy="380" r="70" fill="#1e1b4b"/>
+  <circle cx="380" cy="380" r="55" fill="white"/>
+  <circle cx="380" cy="380" r="5" fill="#1e1b4b"/>
+  <line x1="380" y1="380" x2="380" y2="345" stroke="#1e1b4b" stroke-width="5" stroke-linecap="round"/>
+  <line x1="380" y1="380" x2="405" y2="395" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
+</svg>

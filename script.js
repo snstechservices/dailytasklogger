@@ -1593,6 +1593,7 @@ function saveGoals() {
   
   // Save to localStorage
   localStorage.setItem("workGoals", JSON.stringify({ daily, weekly }));
+  triggerFirebaseSync();
   
   // Close modal and refresh analytics
   closeGoalsModal();
@@ -1931,6 +1932,7 @@ function renderProjectList() {
       const index = parseInt(e.target.dataset.index);
       customProjects.splice(index, 1);
       localStorage.setItem("customProjects", JSON.stringify(customProjects));
+      triggerFirebaseSync();
       renderProjectList();
       populateProjectSelect();
     });
@@ -1955,6 +1957,7 @@ function renderCategoryList() {
       const index = parseInt(e.target.dataset.index);
       customCategories.splice(index, 1);
       localStorage.setItem("customCategories", JSON.stringify(customCategories));
+      triggerFirebaseSync();
       renderCategoryList();
       populateCategorySelect();
     });
@@ -1987,6 +1990,7 @@ function renderHolidayList() {
       const date = e.target.dataset.date;
       holidays = holidays.filter((h) => h.date !== date);
       localStorage.setItem("holidays", JSON.stringify(holidays));
+  triggerFirebaseSync();
       renderHolidayList();
       renderWeekView();
     });
@@ -2009,6 +2013,7 @@ function addHoliday() {
 
   holidays.push({ date, name });
   localStorage.setItem("holidays", JSON.stringify(holidays));
+  triggerFirebaseSync();
 
   if (holidayDateInput) holidayDateInput.value = "";
   if (holidayNameInput) holidayNameInput.value = "";
@@ -2137,6 +2142,7 @@ function saveBranding() {
   
   // Save to localStorage
   localStorage.setItem("reportBrand", JSON.stringify(newBrand));
+  triggerFirebaseSync();
   
   // Update the global variable
   REPORT_BRAND = newBrand;
@@ -2756,10 +2762,18 @@ function updateSessionStats() {
   totalBreakTime.textContent = formatDuration(totalBreak);
 }
 
-// Save data to localStorage
+// Helper function to trigger Firebase sync
+function triggerFirebaseSync() {
+  if (window.firebaseStateManager && window.firebaseStateManager.isSignedIn()) {
+    window.firebaseStateManager.triggerAutoSave();
+  }
+}
+
+// Save data to localStorage and Firebase
 function saveData() {
   try {
     localStorage.setItem("workSessions", JSON.stringify(workSessions));
+    triggerFirebaseSync();
   } catch (e) {
     console.error("Failed to save workSessions to localStorage", e);
   }
@@ -4292,6 +4306,7 @@ function saveReminderSettings() {
   if (browserNotificationsEnabled) reminderSettings.browserNotifications.enabled = browserNotificationsEnabled.checked;
   
   localStorage.setItem("reminderSettings", JSON.stringify(reminderSettings));
+  triggerFirebaseSync();
   
   // Restart timers with new settings
   stopReminderTimers();

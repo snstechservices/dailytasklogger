@@ -1199,6 +1199,160 @@ h1 {
   box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
 }
 
+/* Firebase Auth Styles */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.firebase-auth-container {
+  display: flex;
+  align-items: center;
+}
+
+.firebase-auth-signed-out {
+  display: flex;
+}
+
+.firebase-auth-signed-in {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.firebase-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.firebase-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-color);
+}
+
+.firebase-user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.firebase-user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.firebase-sync-status {
+  font-size: 0.7rem;
+  color: var(--success-color);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.firebase-sync-status::before {
+  content: '●';
+  font-size: 0.5rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.btn-firebase-signin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-firebase-signin:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-firebase-sync {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-firebase-sync:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-firebase-sync:active {
+  transform: scale(0.98);
+}
+
+.sync-icon {
+  font-size: 0.875rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.btn-firebase-signout {
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.btn-firebase-signout:hover {
+  background: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
+.firebase-icon {
+  font-size: 1rem;
+}
+
 h2, h3 {
   color: var(--text-primary);
   margin: 24px 0 18px 0;
@@ -4451,6 +4605,80 @@ button:disabled {
 .footer-divider {
   color: var(--text-muted);
   font-size: 0.8rem;
+}
+
+/* ========================================
+   PWA OFFLINE STYLES
+   ======================================== */
+
+/* Offline indicator banner */
+.offline::before {
+  content: '📴 You are offline - Some features may be limited';
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  z-index: 10000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.offline .personalized-header {
+  margin-top: 40px;
+}
+
+/* PWA Install button (optional) */
+.pwa-install-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  padding: 12px 20px;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition-base);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.pwa-install-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: var(--shadow-lg), 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: var(--shadow-lg), 0 0 0 10px rgba(99, 102, 241, 0); }
+}
+
+.pwa-install-btn.hidden {
+  display: none;
+}
+
+/* Standalone PWA adjustments */
+@media all and (display-mode: standalone) {
+  /* Adjust for no browser chrome */
+  .personalized-header {
+    padding-top: env(safe-area-inset-top, 16px);
+  }
+  
+  .app-footer {
+    padding-bottom: env(safe-area-inset-bottom, 24px);
+  }
 }
 
 /* ========================================
