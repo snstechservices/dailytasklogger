@@ -192,14 +192,23 @@ const REPORT_TIMEZONE_KEY = "reportTimezone";
 const reportWorkstationInput = document.getElementById("reportWorkstationInput");
 const reportTimezoneInput = document.getElementById("reportTimezoneInput");
 
-const REPORT_BRAND = {
+// Default branding configuration
+const DEFAULT_BRAND = {
   name: "S&S Tech Services",
   website: "https://snstechservices.com.au/",
   email: "info@snstechservices.com.au",
   address: "301 Castlereagh St Haymarket NSW 2000 Australia",
-  phone: "0435 543 255, 0452 338 954",
-  logoFile: "SS-tech-logo.png"
+  phone: "0435 543 255, 0452 338 954"
 };
+
+// Load branding from localStorage or use default
+function getReportBrand() {
+  const saved = safeLoadJson("reportBrand", null);
+  return saved || { ...DEFAULT_BRAND };
+}
+
+// Branding variable (will be loaded dynamically)
+let REPORT_BRAND = getReportBrand();
 
 const DEFAULT_WORKSTATION = "Office Kathmandu";
 const DEFAULT_TIMEZONE = "GMT+05:45 (Asia/Kathmandu)";
@@ -1951,6 +1960,7 @@ function openSettings() {
   renderProjectList();
   renderCategoryList();
   renderHolidayList();
+  loadBrandingUI();
 
   if (reportUserNameInput) {
     reportUserNameInput.value = localStorage.getItem(REPORT_USER_KEY) || "";
@@ -1990,6 +2000,74 @@ function saveReportContext() {
     else localStorage.removeItem(REPORT_TIMEZONE_KEY);
   }
 }
+
+// ========================================
+// BRANDING FUNCTIONS
+// ========================================
+
+function loadBrandingUI() {
+  const brand = getReportBrand();
+  
+  const brandNameInput = document.getElementById("brandNameInput");
+  const brandAddressInput = document.getElementById("brandAddressInput");
+  const brandPhoneInput = document.getElementById("brandPhoneInput");
+  const brandEmailInput = document.getElementById("brandEmailInput");
+  const brandWebsiteInput = document.getElementById("brandWebsiteInput");
+  
+  if (brandNameInput) brandNameInput.value = brand.name || DEFAULT_BRAND.name;
+  if (brandAddressInput) brandAddressInput.value = brand.address || DEFAULT_BRAND.address;
+  if (brandPhoneInput) brandPhoneInput.value = brand.phone || DEFAULT_BRAND.phone;
+  if (brandEmailInput) brandEmailInput.value = brand.email || DEFAULT_BRAND.email;
+  if (brandWebsiteInput) brandWebsiteInput.value = brand.website || DEFAULT_BRAND.website;
+}
+
+function saveBranding() {
+  const brandNameInput = document.getElementById("brandNameInput");
+  const brandAddressInput = document.getElementById("brandAddressInput");
+  const brandPhoneInput = document.getElementById("brandPhoneInput");
+  const brandEmailInput = document.getElementById("brandEmailInput");
+  const brandWebsiteInput = document.getElementById("brandWebsiteInput");
+  
+  const newBrand = {
+    name: brandNameInput?.value.trim() || DEFAULT_BRAND.name,
+    address: brandAddressInput?.value.trim() || DEFAULT_BRAND.address,
+    phone: brandPhoneInput?.value.trim() || DEFAULT_BRAND.phone,
+    email: brandEmailInput?.value.trim() || DEFAULT_BRAND.email,
+    website: brandWebsiteInput?.value.trim() || DEFAULT_BRAND.website
+  };
+  
+  // Save to localStorage
+  localStorage.setItem("reportBrand", JSON.stringify(newBrand));
+  
+  // Update the global variable
+  REPORT_BRAND = newBrand;
+  
+  console.log("Branding saved:", newBrand);
+}
+
+function resetBranding() {
+  // Reset to default
+  localStorage.removeItem("reportBrand");
+  REPORT_BRAND = { ...DEFAULT_BRAND };
+  
+  // Reload UI
+  loadBrandingUI();
+  
+  showNotification("Branding reset to default", "info");
+}
+
+// Initialize branding on settings open
+function initBrandingListeners() {
+  const saveBrandingBtn = document.getElementById("saveBrandingBtn");
+  const resetBrandingBtn = document.getElementById("resetBrandingBtn");
+  
+  if (saveBrandingBtn) saveBrandingBtn.addEventListener("click", saveBranding);
+  if (resetBrandingBtn) resetBrandingBtn.addEventListener("click", resetBranding);
+}
+
+// ========================================
+// END BRANDING FUNCTIONS
+// ========================================
 
 // Show task modal
 function showTaskModal(isFirstTask = false) {
@@ -2629,8 +2707,68 @@ function renderWeekView() {
   // Render daily breakdown
   renderDailyBreakdown(weekSessions, startStr, endStr);
 
+  // Update storage info
+  updateStorageInfo();
+
   // Update analytics dashboard
   generateAnalytics();
+}
+
+// Update storage usage display
+function updateStorageInfo() {
+  try {
+    // Calculate size of workSessions
+    const sessionsData = localStorage.getItem("workSessions") || "[]";
+    const sessionsBytes = new Blob([sessionsData]).size;
+    const sessionsKB = (sessionsBytes / 1024).toFixed(2);
+    
+    // Calculate total localStorage usage
+    let totalBytes = 0;
+    for (let key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        totalBytes += new Blob([localStorage.getItem(key)]).size;
+        totalBytes += new Blob([key]).size;
+      }
+    }
+    const totalKB = (totalBytes / 1024).toFixed(2);
+    const totalMB = (totalBytes / (1024 * 1024)).toFixed(3);
+    
+    // Count sessions
+    const sessions = JSON.parse(sessionsData);
+    const sessionCount = sessions.length;
+    
+    // Calculate activities count
+    let activitiesCount = 0;
+    sessions.forEach(s => {
+      activitiesCount += (s.activities || []).length;
+    });
+    
+    // Update UI
+    const sessionsSize = document.getElementById("sessionsSize");
+    const totalRecords = document.getElementById("totalRecords");
+    const totalStorage = document.getElementById("totalStorage");
+    const storageBarFill = document.getElementById("storageBarFill");
+    
+    if (sessionsSize) sessionsSize.textContent = `${sessionsKB} KB`;
+    if (totalRecords) totalRecords.textContent = `${sessionCount} sessions, ${activitiesCount} activities`;
+    if (totalStorage) totalStorage.textContent = totalBytes > 1024 * 1024 ? `${totalMB} MB` : `${totalKB} KB`;
+    
+    // Update progress bar (5MB limit)
+    const usagePercent = Math.min(100, (totalBytes / (5 * 1024 * 1024)) * 100);
+    if (storageBarFill) {
+      storageBarFill.style.width = `${usagePercent}%`;
+      // Change color based on usage
+      if (usagePercent > 80) {
+        storageBarFill.style.background = "linear-gradient(90deg, #ef4444, #f87171)";
+      } else if (usagePercent > 50) {
+        storageBarFill.style.background = "linear-gradient(90deg, #f59e0b, #fbbf24)";
+      } else {
+        storageBarFill.style.background = "var(--primary-gradient)";
+      }
+    }
+  } catch (error) {
+    console.log("Error calculating storage:", error);
+  }
 }
 
 // Render daily breakdown
@@ -2729,7 +2867,7 @@ function renderDailyBreakdown(weekSessions, startStr, endStr) {
       // Calculate total gap time
       const totalGapMinutes = gaps.reduce((sum, gap) => sum + gap.durationMinutes, 0);
 
-      let activitiesHTML = '<div class="activities-table"><table><thead><tr><th>Type</th><th>Status</th><th>Time</th><th>Duration</th><th>Description</th><th>Project</th><th>Category</th><th>Actions</th></tr></thead><tbody>';
+      let activitiesHTML = '<div class="activities-table-wrapper"><div class="activities-table"><table><thead><tr><th>Type</th><th>Status</th><th>Time</th><th>Duration</th><th>Description</th><th>Project</th><th>Category</th><th>Actions</th></tr></thead><tbody>';
 
       sortedActivities.forEach((activity, activityIndex) => {
         // Find actual index in original array for editing
@@ -2790,7 +2928,7 @@ function renderDailyBreakdown(weekSessions, startStr, endStr) {
         }
       });
 
-      activitiesHTML += '</tbody></table></div>';
+      activitiesHTML += '</tbody></table></div></div>';
 
       // Add gap summary if there are gaps
       const gapSummary = gaps.length > 0 
@@ -3115,20 +3253,7 @@ async function exportWeekDataExcel() {
     { width: 22 }
   ];
 
-  // Logo + brand header
-  try {
-    const res = await fetch(REPORT_BRAND.logoFile, { cache: "no-cache" });
-    if (res.ok) {
-      const buf = await res.arrayBuffer();
-      const base64 = arrayBufferToBase64(buf);
-      const imageId = workbook.addImage({ base64: `data:image/png;base64,${base64}`, extension: "png" });
-      summary.getRow(1).height = 48;
-      summary.addImage(imageId, { tl: { col: 1, row: 0 }, ext: { width: 160, height: 48 } });
-    }
-  } catch {
-    // Logo is optional; continue without it.
-  }
-
+  // Brand header
   summary.getCell("B2").value = REPORT_BRAND.name;
   summary.getCell("B2").font = { size: 16, bold: true };
   summary.getCell("B3").value = REPORT_BRAND.address;
@@ -4359,41 +4484,192 @@ function playReminderSound() {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
     
-    // Generate a pleasant notification sound
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
     const volume = reminderSettings.sound.volume / 100;
-    gainNode.gain.value = volume * 0.3;
-    
-    // Different sound types
     const soundType = reminderSettings.sound.type;
-    if (soundType === 'bell') {
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-    } else if (soundType === 'chime') {
-      oscillator.frequency.value = 1000;
-      oscillator.type = 'sine';
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-    } else if (soundType === 'gentle') {
-      oscillator.frequency.value = 600;
-      oscillator.type = 'sine';
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-    } else if (soundType === 'digital') {
-      oscillator.frequency.value = 1200;
-      oscillator.type = 'square';
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-    }
     
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
+    // Different sound implementations
+    switch (soundType) {
+      case 'bell':
+        playBellSound(volume);
+        break;
+      case 'chime':
+        playChimeSound(volume);
+        break;
+      case 'gentle':
+        playGentleSound(volume);
+        break;
+      case 'digital':
+        playDigitalSound(volume);
+        break;
+      case 'piano':
+        playPianoSound(volume);
+        break;
+      case 'harp':
+        playHarpSound(volume);
+        break;
+      case 'marimba':
+        playMarimbaSound(volume);
+        break;
+      case 'whistle':
+        playWhistleSound(volume);
+        break;
+      case 'ding':
+        playDingSound(volume);
+        break;
+      case 'zen':
+        playZenSound(volume);
+        break;
+      default:
+        playBellSound(volume);
+    }
   } catch (error) {
     console.log('Audio playback failed:', error);
   }
+}
+
+// Individual sound generators
+function playBellSound(volume) {
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  oscillator.frequency.value = 800;
+  oscillator.type = 'sine';
+  gainNode.gain.value = volume * 0.3;
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.5);
+}
+
+function playChimeSound(volume) {
+  [1000, 1200, 1500].forEach((freq, i) => {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.value = volume * 0.2;
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3 + i * 0.1);
+    osc.start(audioContext.currentTime + i * 0.1);
+    osc.stop(audioContext.currentTime + 0.4 + i * 0.1);
+  });
+}
+
+function playGentleSound(volume) {
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  oscillator.frequency.value = 400;
+  oscillator.type = 'sine';
+  gainNode.gain.value = volume * 0.15;
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.2);
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 1.2);
+}
+
+function playDigitalSound(volume) {
+  [1200, 900, 1200].forEach((freq, i) => {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.frequency.value = freq;
+    osc.type = 'square';
+    gain.gain.value = volume * 0.1;
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15 + i * 0.08);
+    osc.start(audioContext.currentTime + i * 0.08);
+    osc.stop(audioContext.currentTime + 0.15 + i * 0.08);
+  });
+}
+
+function playPianoSound(volume) {
+  [523, 659, 784].forEach((freq, i) => {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.frequency.value = freq;
+    osc.type = 'triangle';
+    gain.gain.value = volume * 0.25;
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6 + i * 0.15);
+    osc.start(audioContext.currentTime + i * 0.15);
+    osc.stop(audioContext.currentTime + 0.7 + i * 0.15);
+  });
+}
+
+function playHarpSound(volume) {
+  [392, 494, 587, 784].forEach((freq, i) => {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.value = volume * 0.2;
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8 + i * 0.12);
+    osc.start(audioContext.currentTime + i * 0.12);
+    osc.stop(audioContext.currentTime + 0.9 + i * 0.12);
+  });
+}
+
+function playMarimbaSound(volume) {
+  [700, 880, 700].forEach((freq, i) => {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.value = volume * 0.35;
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15 + i * 0.12);
+    osc.start(audioContext.currentTime + i * 0.12);
+    osc.stop(audioContext.currentTime + 0.2 + i * 0.12);
+  });
+}
+
+function playWhistleSound(volume) {
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  osc.frequency.value = 1800;
+  osc.frequency.exponentialRampToValueAtTime(2400, audioContext.currentTime + 0.15);
+  osc.frequency.exponentialRampToValueAtTime(1800, audioContext.currentTime + 0.3);
+  osc.type = 'sine';
+  gain.gain.value = volume * 0.15;
+  gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.35);
+  osc.start(audioContext.currentTime);
+  osc.stop(audioContext.currentTime + 0.35);
+}
+
+function playDingSound(volume) {
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  osc.frequency.value = 1500;
+  osc.type = 'sine';
+  gain.gain.value = volume * 0.3;
+  gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+  osc.start(audioContext.currentTime);
+  osc.stop(audioContext.currentTime + 0.4);
+}
+
+function playZenSound(volume) {
+  [220, 330, 440].forEach((freq, i) => {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.value = volume * 0.12;
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+    osc.start(audioContext.currentTime + i * 0.3);
+    osc.stop(audioContext.currentTime + 1.5 + i * 0.3);
+  });
 }
 
 // Send browser notification
@@ -4422,6 +4698,21 @@ function testSound() {
 async function requestNotifications() {
   if (!('Notification' in window)) {
     await showAlert("Your browser doesn't support notifications.", "Not Supported");
+    return;
+  }
+  
+  // Check if already granted
+  if (Notification.permission === 'granted') {
+    browserNotificationsEnabled.checked = true;
+    reminderSettings.browserNotifications.enabled = true;
+    saveReminderSettings();
+    await showAlert("Notifications are already enabled!", "✅ Already Enabled");
+    return;
+  }
+  
+  // Check if denied
+  if (Notification.permission === 'denied') {
+    await showAlert("Notification permission was previously denied. Please enable it in your browser settings.", "⚠️ Permission Denied");
     return;
   }
   
@@ -4595,6 +4886,7 @@ saveSettingsBtn.addEventListener("click", () => {
   saveReportUserName();
   saveReportContext();
   saveReminderSettings(); // Save reminder settings
+  saveBranding(); // Save branding settings
   closeSettings();
 });
 addProjectBtn.addEventListener("click", addProject);
@@ -4714,14 +5006,7 @@ if (toggleAnalyticsBtn) {
   toggleAnalyticsBtn.addEventListener("click", toggleAnalytics);
 }
 
-// Analytics time range selector
-const analyticsTimeRange = document.getElementById("analyticsTimeRange");
-if (analyticsTimeRange) {
-  analyticsTimeRange.addEventListener("change", (e) => {
-    analyticsDateRange = e.target.value;
-    generateAnalytics();
-  });
-}
+// Analytics time range selector is handled in analytics-enhanced.js
 
 // Restore analytics visibility state
 const analyticsContent = document.getElementById("analyticsContent");
@@ -4879,4 +5164,8 @@ renderWeekView();
   updateSessionStats();
   
   // Initialize reminder system
-  initReminderSystem();})();
+  initReminderSystem();
+  
+  // Initialize branding listeners
+  initBrandingListeners();
+})();

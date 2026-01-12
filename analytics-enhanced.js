@@ -12,58 +12,7 @@ let weeklyGoal = parseFloat(localStorage.getItem(WEEKLY_GOAL_KEY)) || 40; // hou
 // Analytics time range
 let analyticsTimeRange = "current-week";
 
-// ========================================
-// GOALS MODAL
-// ========================================
-
-const goalsModal = document.getElementById("goalsModal");
-const setGoalsBtn = document.getElementById("setGoalsBtn");
-const closeGoalsModalBtn = document.getElementById("closeGoalsModalBtn");
-const cancelGoalsBtn = document.getElementById("cancelGoalsBtn");
-const saveGoalsBtn = document.getElementById("saveGoalsBtn");
-const dailyGoalInput = document.getElementById("dailyGoalInput");
-const weeklyGoalInput = document.getElementById("weeklyGoalInput");
-
-if (setGoalsBtn) {
-  setGoalsBtn.addEventListener("click", () => {
-    dailyGoalInput.value = dailyGoal;
-    weeklyGoalInput.value = weeklyGoal;
-    goalsModal.classList.remove("hidden");
-  });
-}
-
-if (closeGoalsModalBtn) {
-  closeGoalsModalBtn.addEventListener("click", () => {
-    goalsModal.classList.add("hidden");
-  });
-}
-
-if (cancelGoalsBtn) {
-  cancelGoalsBtn.addEventListener("click", () => {
-    goalsModal.classList.add("hidden");
-  });
-}
-
-if (saveGoalsBtn) {
-  saveGoalsBtn.addEventListener("click", () => {
-    const newDailyGoal = parseFloat(dailyGoalInput.value);
-    const newWeeklyGoal = parseFloat(weeklyGoalInput.value);
-
-    if (newDailyGoal > 0 && newDailyGoal <= 24) {
-      dailyGoal = newDailyGoal;
-      localStorage.setItem(DAILY_GOAL_KEY, dailyGoal);
-    }
-
-    if (newWeeklyGoal > 0 && newWeeklyGoal <= 168) {
-      weeklyGoal = newWeeklyGoal;
-      localStorage.setItem(WEEKLY_GOAL_KEY, weeklyGoal);
-    }
-
-    goalsModal.classList.add("hidden");
-    updateGoalsDisplay();
-    renderWeekView();
-  });
-}
+// Goals modal is handled in script.js to avoid duplicate declarations
 
 // ========================================
 // TIME RANGE SELECTOR
@@ -193,7 +142,7 @@ function generateAnalyticsEnhanced() {
 // ENHANCED PEAK HOURS CHART
 // ========================================
 
-let peakHoursChart = null;
+// peakHoursChart variable is declared in script.js
 
 function updatePeakHoursChartEnhanced(hourlyDistribution) {
   const ctx = document.getElementById("peakHoursChart");
