@@ -9,11 +9,13 @@
    git push origin main
    ```
 
-2. **Enable GitHub Pages**
+2. **Enable GitHub Pages (REQUIRED - Must be done manually)**
+   - ⚠️ **IMPORTANT**: You MUST enable GitHub Pages manually before the workflow can deploy
    - Go to your repository Settings
    - Navigate to **Pages** section
-   - Under "Source", select **GitHub Actions**
-   - The workflow will automatically deploy on push
+   - Under "Build and deployment" → "Source", select **GitHub Actions**
+   - Click **Save** to apply the changes
+   - The workflow will automatically deploy on the next push
 
 3. **Configure Firebase**
    - Go to [Firebase Console](https://console.firebase.google.com/)
@@ -121,6 +123,18 @@ const firebaseConfig = {
    - Test offline functionality
 
 ## Troubleshooting
+
+### GitHub Pages Deployment Fails with "Resource not accessible by integration"
+**Error**: `Get Pages site failed` or `Create Pages site failed. Error: Resource not accessible by integration`
+
+**Solution**: 
+1. GitHub Pages must be enabled manually before the workflow can deploy
+2. Go to your repository → **Settings** → **Pages**
+3. Under "Build and deployment" → "Source", select **GitHub Actions**
+4. Click **Save**
+5. Push a new commit or re-run the workflow
+
+**Why this happens**: The workflow doesn't have admin permissions to automatically enable Pages. You must enable it manually in repository settings first.
 
 ### Service Worker Not Registering
 - Check browser console for errors
